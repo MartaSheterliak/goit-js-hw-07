@@ -1,46 +1,49 @@
 import { galleryItems } from './gallery-items.js';
-// Change code below this line
-const galleryRef = document.querySelector('.gallery');
-const galleryMarkup = createGallery(galleryItems);
 
-galleryRef.insertAdjacentHTML('beforeend', galleryMarkup);
+const containerItems = document.querySelector('.gallery');
+const itemsDivMarkup = createItemsMarkup(galleryItems);
+containerItems.innerHTML = itemsDivMarkup;
 
-function createGallery(galleryItems) {
-  return galleryItems.map(({ preview, original, description }) => {
-    return `
-    <div class="gallery__item">
-  <a class="gallery__link" href="${original}">
-    <img
-      class="gallery__image"
-      src="${preview}"
-      data-source="${original}"
-      alt="${description}"
-    />
-  </a>
-</div>
-    `
-  }).join('');
-}
+containerItems.addEventListener('click', onGetBigImg);
 
-galleryRef.addEventListener("click", onGalleryRefClick);
-
-let modalWindow;
-
-function onGalleryRefClick(event) {
+function onGetBigImg(event) {
   event.preventDefault();
-  if (event.target.nodeName !== "IMG") {
+  if (event.target.nodeName !== 'IMG') {
     return;
   }
-  modalWindow = basicLightbox.create(
-    `<img src='${event.target.dataset.source}' width="800" height="600">`
-  );
-  modalWindow.show();
-
-  window.addEventListener("keydown", onEscKeyPress);
-
-  function onEscKeyPress(evt) {
-    if (evt.code === "Escape" && basicLightbox.visible()) {
-      modalWindow.close();
+  const onEscKeyPress = (event) => {
+    if (event.code === 'Escape') {
+      console.log('Нажали Esc - все закрываю');
+      instance.close();
+      return;
     }
-  }
+  };
+  const url = event.target.dataset.source;
+  const instance = basicLightbox.create(`<img width="1400" height="900" src=${url}>`, {
+    onShow: (instance) => {
+      window.addEventListener('keydown', onEscKeyPress);
+       console.log('вішаю слухача Esc');
+    },
+    onClose: (instance) => {
+      window.removeEventListener('keydown', onEscKeyPress);
+      console.log('знімаю слухача Еsс');
+    },
+  });
+  instance.show();
+}
+
+function createItemsMarkup(items) {
+  return items
+    .map(
+      (item) =>
+        `<div class="gallery__item">
+        <a class="gallery__link" href=${item.original} >
+          <img class="gallery__image"
+          src=${item.preview}
+          data-source=${item.original}
+          alt=${item.description}/>
+        </a>
+      </div>`
+    )
+    .join('');
 }
